@@ -25,8 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'My Course';
 $string['mycourse:myaddinstance'] = 'Add my course block to Dashboard';
+$string['pluginname'] = 'My Course';
 $string['nocourse'] = 'Not enrolled in any courses for this year yet.';
-$string['pastcourses'] = 'Past archive Moodle course';
 $string['configyear'] = 'Year for which courses are to be displayed';
