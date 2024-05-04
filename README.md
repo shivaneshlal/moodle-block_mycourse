@@ -1,6 +1,6 @@
 # My Course #
 
-This plugin is a redesign of the Moodle course overview block.
+This plugin block is a redesign of the Moodle course overview block.
 It organizes courses into corresponding years based on the course start date.
 
 ## TODO:
