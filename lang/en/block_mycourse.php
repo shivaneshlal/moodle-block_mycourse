@@ -25,8 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'My Course';
-$string['mycourse:myaddinstance'] = 'Add my course block to Dashboard';
 $string['configyear'] = 'Year for which courses are to be displayed';
+$string['mycourse:myaddinstance'] = 'Add my course block to Dashboard';
 $string['nocourse'] = 'Not enrolled in any courses for this year yet.';
+$string['pluginname'] = 'My Course';
 $string['privacy:metadata'] = 'The MyCourse block does not store any personal data, it only displays information about the courses the user is enrolled in.';
