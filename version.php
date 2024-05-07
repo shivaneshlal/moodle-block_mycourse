@@ -24,12 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'block_mycourse';
-<<<<<<< HEAD
-$plugin->release = '1.1';
-=======
-$plugin->release = '1.2';
->>>>>>> 84f5c7b (Refactor language strings and improve documentation for MyCourse block)
 $plugin->version = 2024050107;
 $plugin->requires = 2022112800;
+$plugin->component = 'block_mycourse';
 $plugin->maturity = MATURITY_STABLE;
+$plugin->release = '1.2';
