@@ -25,14 +25,26 @@
 
  defined('MOODLE_INTERNAL') || die;
 
+ // Set default yearto look back 5 years.
+ $currentyear = date('Y');
+ $defaultyear = $currentyear - 5;
+
 if ($ADMIN->fulltree) {
     // Create settings page.
     $settings->add( new admin_setting_configtext(
         'block_mycourse/year',
         get_string('pluginname', 'block_mycourse'),
         get_string('configyear', 'block_mycourse'),
-        '2020',
+        "$defaultyear",
         PARAM_INT,
-        4
+        4,
      ));
+    // Course image display setting checkbox.
+    $settings->add( new admin_setting_configcheckbox(
+        'block_mycourse/courseimage',
+        get_string('pluginname', 'block_mycourse'),
+        get_string('Courseimage', 'block_mycourse'),
+        0
+    ));
+
 }

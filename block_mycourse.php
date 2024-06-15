@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
 /**
  * Block mycourse is defined here.
  *
@@ -75,6 +76,7 @@ class block_mycourse extends block_base {
         // Render the block content.
         $this->content->text = $OUTPUT->render_from_template('block_mycourse/mycourse', $mycoursecontents);
         return $this->content;
+
     }
 
     /**
@@ -128,13 +130,119 @@ class block_mycourse extends block_base {
             $startyear = date('Y', $course->startdate);
 
             if ($startyear == $year) {
-
                 // Check if the course is visible or if the user is a teacher.
                 if ($course->visible == 1 || ($course->visible == 0 && $userrole->roleid <= 4)) {
-                    $usercourse[] = $course;
+                    // Get the course category.
+                    $category = $this->block_mycourse_get_course_categories($course->id);
+                    // Get course image.
+                    $image = $this->block_mycourse_get_course_image($course->id);
+                    // Get Course visibility.
+                    $coursestatus = "";
+                    if ($course->visible == 0) {
+                        $coursestatus = get_string('coursestatus', 'block_mycourse');
+                    }
+                    $usercourse[] = [
+                        'course' => $course,
+                        'category' => $category,
+                        'image' => $image,
+                        'status' => $coursestatus,
+                    ];
                 }
             }
         }
         return $usercourse;
+    }
+
+    /**
+     * Gets the course categories.
+     *
+     * This method is called to get the course categories.
+     *
+     * @param int $courseid The ID of the course.
+     * @return string The course category.
+     */
+    public function block_mycourse_get_course_categories($courseid) {
+        global $DB;
+        $category = '';
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+        $category = $DB->get_field('course_categories', 'name', ['id' => $course->category], MUST_EXIST);
+        return $category;
+    }
+
+    /**
+     * Gets the course image.
+     *
+     * This method is called to get the course image.
+     *
+     * @param int $courseid The ID of the course.
+     * * @return string The course image URL.
+     */
+    public function block_mycourse_get_course_image($courseid) {
+
+        // Check if the Courseimage setting is enabled.
+        if (!get_config('block_mycourse', 'courseimage')) {
+            return null;
+        }
+
+        $course = get_course($courseid);
+        $context = context_course::instance($courseid);
+
+        // Get course overview files.
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'course', 'overviewfiles', 0, 'sortorder DESC, id ASC', false);
+
+        if (count($files) > 0) {
+            // Get the first file.
+            $file = reset($files);
+            $url = moodle_url::make_pluginfile_url(
+                $file->get_contextid(),
+                $file->get_component(),
+                $file->get_filearea(),
+                null,
+                $file->get_filepath(),
+                $file->get_filename()
+            );
+            $courseimage = $url->out();
+        } else {
+            // Genereate a random image.
+            $courseimage = $this->generaterandomsvg();
+        }
+
+        return $courseimage;
+    }
+
+    /**
+     * Generates a random SVG image.
+     *
+     * This method is called to generate a random SVG image.
+     *
+     * @return string The random SVG image.
+     */
+    public function generaterandomsvg() {
+        $color = $this->generaterandomcolor();
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320">
+            <rect x="0" y="0" width="320" height="320" fill="' . $color . '"/>';
+
+        // Generate a pattern of circles with varying opacity.
+        for ($i = 0; $i < 10; $i++) {
+            for ($j = 0; $j < 10; $j++) {
+                $opacity = (mt_rand(1, 5) / 10);
+                $svg .= '<circle cx="' . ($i * 32) . '" cy="' . ($j * 32) . '" r="16" fill="white" opacity="' . $opacity . '"/>';
+            }
+        }
+
+        $svg .= '</svg>';
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+    }
+
+    /**
+     * Generates a random color.
+     *
+     * This method is called to generate a random color.
+     *
+     * @return string The random color.
+     */
+    public function generaterandomcolor() {
+        return 'rgb(' . mt_rand(0, 200) . ',' . mt_rand(0, 200) . ',' . mt_rand(0, 200) . ')';
     }
 }

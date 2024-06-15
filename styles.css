@@ -1,0 +1,19 @@
+.summary-image {
+    height: 5rem;
+    width: 5rem;
+    background-position: center;
+    background-size: cover;
+}
+
+.rounded {
+    border-radius: 0.1rem !important;
+}
+
+.mw-100 {
+    max-width: 100% !important;
+}
+
+.flex-column-course {
+    flex-direction: column !important;
+    padding: 10px;
+}

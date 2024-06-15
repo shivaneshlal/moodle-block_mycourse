@@ -55,29 +55,40 @@
     {{! Build Year Tabs}}
     <ul class="nav nav-tabs" role="tablist">
         {{#mycoursecontents}}
-        <li class="nav-item">
-            <a class="nav-link {{#active}}active{{/active}}" id="tab-{{year}}" data-toggle="tab" href="#content-{{year}}" role="tab" aria-controls="content-{{year}}" aria-selected="{{#active}}true{{/active}}">{{year}}</a>
-        </li>
+            <li class="nav-item">
+                <a class="nav-link {{#active}}active{{/active}}" id="tab-{{year}}" data-toggle="tab" href="#content-{{year}}" role="tab" aria-controls="content-{{year}}" aria-selected="{{#active}}true{{/active}}">{{year}}</a>
+            </li>
         {{/mycoursecontents}}
     </ul>
 
     {{! Courses by year}}
     <div class="tab-content">
         {{#mycoursecontents}}
-        <div class="tab-pane fade {{#active}}show active{{/active}}" id="content-{{year}}" role="tabpanel" aria-labelledby="tab-{{year}}">
-            <ul class="list-group list-group-flush">
-                {{#courses}}
-                    <li class="list-group-item">
-                        <a href="/course/view.php?id={{id}}">{{fullname}}</a>
-                    </li>
-                {{/courses}}
-                {{^courses}} {{!If there are no courses.}}
-                <li class="list-group-item">
-                    <div class="alert alert-warning" role="alert">{{nocourse}}</div>
-                </li>
-                {{/courses}}
-            </ul>
-        </div>
+            <div class="tab-pane fade {{#active}}show active{{/active}}" id="content-{{year}}" role="tabpanel" aria-labelledby="tab-{{year}}">
+                <ul class="list-group list-group-flush">
+                    {{#courses}}
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                {{#image}}
+                                    <div class="summary-image rounded mw-100" style='background-image: url("{{image}}");'></div>
+                                {{/image}}
+                                <div class="flex-column-course">
+                                    <span class="badge badge-pill">{{category}}</span><br>
+                                        <a href="/course/view.php?id={{course.id}}" class="aalink coursename">{{course.fullname}}</a><br>
+                                    <span class="badge bg-info text-white">{{status}}</span>
+                                </div>
+                            </div>
+                        </li>
+                    {{/courses}}
+                    {{^courses}} {{!If there are no courses.}}
+                        <li class="list-group-item">
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i> {{nocourse}}
+                            </div>
+                        </li>
+                    {{/courses}}
+                </ul>
+            </div>
         {{/mycoursecontents}}
     </div>
 </div>
