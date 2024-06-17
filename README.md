@@ -3,8 +3,8 @@
 This plugin block is a redesign of the Moodle course overview block.
 It organizes courses into corresponding years based on the course start date.
 
-_In the new release, we introduce new settings that allow users to choose whether to display the course image and category information. The settings are configurable and can be toggled on or off as per user preference. This enhances the user's ability to customize their view.
-_
+In the new release, we introduce new settings that allow users to choose whether to display the course image and category information. The settings are configurable and can be toggled on or off as per user preference. This enhances the user's ability to customize their view.
+
 ## TODO:
 1. Navigate to `Site Administration > Plugins > Blocks > My Course`.
 2. Enter the year value up to which you need the tabs to be built. By default, tabs will be built up to the year 2020.
