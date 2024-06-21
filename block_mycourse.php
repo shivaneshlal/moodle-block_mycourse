@@ -142,7 +142,7 @@ class block_mycourse extends block_base {
                         $coursestatus = get_string('coursestatus', 'block_mycourse');
                     }
                     // Get course completion percentage for students only.
-                    $coursecompletion = 0;
+                    $coursecompletion = null;
                     if ($userrole->roleid == 5) {
                         $coursecompletion = $this->get_course_completion($course, $userid);
                     }
