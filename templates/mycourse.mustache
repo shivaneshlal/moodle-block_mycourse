@@ -73,9 +73,16 @@
                                     <div class="summary-image rounded mw-100" style='background-image: url("{{image}}");'></div>
                                 {{/image}}
                                 <div class="flex-column-course">
-                                    <span class="badge badge-pill">{{category}}</span><br>
+                                    {{#category}}
+                                        <span class="badge badge-pill">{{category}}</span><br>
+                                    {{/category}}
                                         <a href="/course/view.php?id={{course.id}}" class="aalink coursename">{{course.fullname}}</a><br>
                                     <span class="badge bg-info text-white">{{status}}</span>
+                                    {{#progress}}
+                                        <div class="progress-text font-weight-light">
+                                            <span>{{progress}}% complete</span>
+                                        </div>
+                                    {{/progress}}
                                 </div>
                             </div>
                         </li>

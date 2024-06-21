@@ -33,18 +33,24 @@ if ($ADMIN->fulltree) {
     // Create settings page.
     $settings->add( new admin_setting_configtext(
         'block_mycourse/year',
-        get_string('pluginname', 'block_mycourse'),
         get_string('configyear', 'block_mycourse'),
+        get_string('year', 'block_mycourse'),
         "$defaultyear",
         PARAM_INT,
         4,
      ));
+    // Course category display setting checkbox.
+    $settings->add( new admin_setting_configcheckbox(
+        'block_mycourse/coursecategory',
+        get_string('configcoursecategory', 'block_mycourse'),
+        get_string('coursecategory', 'block_mycourse'),
+        0
+    ));
     // Course image display setting checkbox.
     $settings->add( new admin_setting_configcheckbox(
         'block_mycourse/courseimage',
-        get_string('pluginname', 'block_mycourse'),
-        get_string('Courseimage', 'block_mycourse'),
+        get_string('configcourseimage', 'block_mycourse'),
+        get_string('courseimage', 'block_mycourse'),
         0
     ));
-
 }

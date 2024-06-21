@@ -25,10 +25,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['Courseimage'] = 'Display the course image.';
-$string['configyear'] = 'Year for which courses are to be displayed.';
+$string['configcoursecategory'] = 'Display categories';
+$string['configcourseimage'] = 'Display course image';
+$string['configyear'] = 'Year Tabs';
+$string['coursecategory'] = 'Display the course category on dashboard of the course.';
+$string['courseimage'] = 'Display the course image on the dashboard of the course.';
 $string['coursestatus'] = 'Hidden from students.';
 $string['mycourse:myaddinstance'] = 'Add my course block to Dashboard.';
 $string['nocourse'] = 'Not enrolled in any courses for this year yet.';
 $string['pluginname'] = 'My Course';
 $string['privacy:metadata'] = 'The MyCourse block does not store any personal data, it only displays information about the courses the user is enrolled in.';
+$string['year'] = 'Year for which courses year tabs are to be displayed.';

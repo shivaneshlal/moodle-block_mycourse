@@ -6,14 +6,15 @@
 }
 
 .rounded {
-    border-radius: 0.1rem !important;
+    border-radius: 0.1rem;
 }
 
 .mw-100 {
-    max-width: 100% !important;
+    max-width: 100%;
 }
 
 .flex-column-course {
-    flex-direction: column !important;
+    flex-direction: column;
     padding: 10px;
 }
+
