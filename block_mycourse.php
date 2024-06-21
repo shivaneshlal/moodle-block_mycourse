@@ -138,14 +138,21 @@ class block_mycourse extends block_base {
                     $image = $this->block_mycourse_get_course_image($course->id);
                     // Get Course visibility.
                     $coursestatus = "";
-                    if ($course->visible == 0) {
+                    if ($course->visible == 0 && ($userrole->roleid <= 4)) {
                         $coursestatus = get_string('coursestatus', 'block_mycourse');
                     }
+                    // Get course completion percentage for students only.
+                    $coursecompletion = 0;
+                    if ($userrole->roleid == 5) {
+                        $coursecompletion = $this->get_course_completion($course, $userid);
+                    }
+
                     $usercourse[] = [
                         'course' => $course,
                         'category' => $category,
                         'image' => $image,
                         'status' => $coursestatus,
+                        'progress' => $coursecompletion,
                     ];
                 }
             }
@@ -163,6 +170,12 @@ class block_mycourse extends block_base {
      */
     public function block_mycourse_get_course_categories($courseid) {
         global $DB;
+
+        // Check if the Coursecategory setting is enabled.
+        if (!get_config('block_mycourse', 'coursecategory')) {
+            return null;
+        }
+
         $category = '';
         $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
         $category = $DB->get_field('course_categories', 'name', ['id' => $course->category], MUST_EXIST);
@@ -175,7 +188,7 @@ class block_mycourse extends block_base {
      * This method is called to get the course image.
      *
      * @param int $courseid The ID of the course.
-     * * @return string The course image URL.
+     * @return string The course image URL.
      */
     public function block_mycourse_get_course_image($courseid) {
 
@@ -245,4 +258,33 @@ class block_mycourse extends block_base {
     public function generaterandomcolor() {
         return 'rgb(' . mt_rand(0, 200) . ',' . mt_rand(0, 200) . ',' . mt_rand(0, 200) . ')';
     }
+
+    /**
+     * Gets the course completion percentage.
+     *
+     * This method is called to get the course completion percentage.
+     *
+     * @param stdClass $course The course object.
+     * @param int $userid The ID of the user.
+     * @return float|null The course completion percentage, or null if no completion data is available.
+     */
+    public function get_course_completion($course, $userid) {
+        global $CFG;
+        require_once($CFG->dirroot . '/completion/classes/progress.php');
+        require_once($CFG->libdir . '/completionlib.php');
+
+        // Create an instance of completion_info for the given course.
+        $completion = new \completion_info($course);
+
+        // Check if completion is enabled for this course.
+        if (!$completion->is_enabled()) {
+            return false;
+        }
+
+        // Get the course progress percentage.
+        $progress = \core_completion\progress::get_course_progress_percentage($course, $userid);
+
+        return $progress;
+    }
+
 }
