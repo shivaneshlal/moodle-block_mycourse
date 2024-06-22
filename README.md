@@ -1,9 +1,8 @@
 # My Course #
 
-This plugin block is a redesign of the Moodle course overview block.
-It organizes courses into corresponding years based on the course start date.
+This plugin block organizes courses into corresponding years based on the course start date and displays courses by year in tabs. 
 
-In the new release, we introduce new settings that allow users to choose whether to display the course image and category information. The settings are configurable and can be toggled on or off as per user preference. This enhances the user's ability to customize their view.
+In the new release, we introduce new settings that allow users to choose whether to display the course image and category information - course progress is also available for students view (provided "Completion tracking" option is turned on in the course settings). The settings are configurable and can be toggled on or off by the site admins.
 
 ## TODO:
 1. Navigate to `Site Administration > Plugins > Blocks > My Course`.
