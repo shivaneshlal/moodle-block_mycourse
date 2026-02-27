@@ -1,48 +1,64 @@
-# My Course #
+# My Course
 
-This plugin block organizes courses into corresponding years based on the course start date and displays courses by year in tabs. 
+`block_mycourse` shows a user's enrolled courses in year tabs, based on each course start date.
 
-In the new release, we introduce new settings that allow users to choose whether to display the course image and category information - course progress is also available for students view (provided "Completion tracking" option is turned on in the course settings). The settings are configurable and can be toggled on or off by the site admins.
+## Features
 
-## TODO:
-1. Navigate to `Site Administration > Plugins > Blocks > My Course`.
-2. Enter the year value up to which you need the tabs to be built. By default, tabs will be built up to the year 2020.
+- Year-based tabs (current year active by default).
+- Sort options:
+  - Group by category
+  - Recently accessed
+  - Start date (newest first)
+- Status filter:
+  - All
+  - Started
+  - Upcoming
+- Category view with collapsible groups and expand/collapse all.
+- Optional course image display.
+- Deterministic fallback image for courses without an overview image.
+- Optional category metadata display.
+- Optional course start status display (`Started on ...` / `Starts on ...`).
+- Student course completion percentage display (when completion tracking is enabled).
+- Optional search box that submits to Moodle core course search (`/course/search.php`).
 
-## Installing via uploaded ZIP file ##
+## Configuration
 
-1. Log in to your Moodle site as an admin and go to _Site administration >
-   Plugins > Install plugins_.
-2. Upload the ZIP file with the plugin code. You should only be prompted to add
-   extra details if your plugin type is not automatically detected.
-3. Check the plugin validation report and finish the installation.
+Go to `Site administration > Plugins > Blocks > My Course`.
 
-## Installing manually ##
+Available settings:
+- `Year Tabs`: earliest year to include in tabs.
+- `Display categories`: show course category text.
+- `Display course image`: show overview image (or fallback image).
+- `Display course start status`: show started/starts-on date text.
+- `Display course search`: show a search field that uses Moodle core course search.
 
-The plugin can be also installed by putting the contents of this directory to
+## Installation
 
-    {your/moodle/dirroot}/blocks/mycourse
+### Installing via uploaded ZIP file
 
-Afterwards, log in to your Moodle site as an admin and go to _Site administration >
-Notifications_ to complete the installation.
+1. Log in to your Moodle site as admin.
+2. Go to `Site administration > Plugins > Install plugins`.
+3. Upload the plugin ZIP.
+4. Complete the installation steps.
 
-Alternatively, you can run
+### Installing manually
 
-    $ php admin/cli/upgrade.php
+Copy this directory to:
 
-to complete the installation from the command line.
+`{moodle_dirroot}/blocks/mycourse`
 
-## License ##
+Then complete the upgrade from:
+- Web: `Site administration > Notifications`
+- CLI: `php admin/cli/upgrade.php`
 
-2024 Shivanesh Lal<shivanesh.lal@outlook.com.com>
+## Developer Notes
 
-This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation, either version 3 of the License, or (at your option) any later
-version.
+- AMD module: `block_mycourse/main` (`amd/src/main.js`).
+- Mustache template: `templates/mycourse.mustache`.
+- Styles are plugin-scoped using `block_mycourse__*` classes.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+## License
 
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <https://www.gnu.org/licenses/>.
+2024 Shivanesh Lal `<shivanesh.lal@outlook.com.com>`
+
+Licensed under GNU GPL v3 or later.
