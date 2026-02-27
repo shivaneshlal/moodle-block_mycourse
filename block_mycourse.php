@@ -57,21 +57,47 @@ class block_mycourse extends block_base {
      */
     public function get_content() {
 
-        global $OUTPUT, $CFG, $USER, $DB;
+        global $OUTPUT, $USER;
 
         if ($this->content !== null) {
             return $this->content;
         }
 
-        // Get Current year to build year tabs.
-        $currentyear = date('Y');
+        // Get current year (user timezone) to build year tabs.
+        $currentyear = (int)userdate(time(), '%Y');
 
         $this->content = new stdClass;
         $this->content->text = '';
         $this->content->footer = '';
 
         $mycoursecontents = new stdClass();
+        $mycoursecontents->instanceid = isset($this->instance->id) ? (int)$this->instance->id : 0;
         $mycoursecontents->mycoursecontents = $this->block_mycourse_build_nav_tabs($USER->id, $currentyear);
+        $mycoursecontents->sortlabel = get_string('sortby', 'block_mycourse');
+        $mycoursecontents->uncategorizedlabel = get_string('uncategorized', 'block_mycourse');
+        $mycoursecontents->nofilteredcourseslabel = get_string('nofilteredcourses', 'block_mycourse');
+        $mycoursecontents->expandalllabel = get_string('expandall', 'block_mycourse');
+        $mycoursecontents->collapsealllabel = get_string('collapseall', 'block_mycourse');
+        $mycoursecontents->togglecategorytemplatelabel = get_string('togglecategory', 'block_mycourse', '{category}');
+        $mycoursecontents->searchlabel = get_string('searchcourses', 'block_mycourse');
+        $mycoursecontents->searchplaceholder = get_string('searchcoursesplaceholder', 'block_mycourse');
+        $mycoursecontents->showsearch = (bool)get_config('block_mycourse', 'coursesearch');
+        $mycoursecontents->searchurl = (new moodle_url('/course/search.php'))->out(false);
+        $mycoursecontents->sortoptions = [
+            [
+                'value' => 'category',
+                'label' => get_string('sortbycategory', 'block_mycourse'),
+            ],
+            [
+                'value' => 'recentlyaccessed',
+                'label' => get_string('sortbyrecentlyaccessed', 'block_mycourse'),
+            ],
+            [
+                'value' => 'startdate',
+                'label' => get_string('sortbystartdate', 'block_mycourse'),
+                'selected' => true,
+            ],
+        ];
 
         // Render the block content.
         $this->content->text = $OUTPUT->render_from_template('block_mycourse/mycourse', $mycoursecontents);
@@ -90,8 +116,11 @@ class block_mycourse extends block_base {
      */
     public function block_mycourse_build_nav_tabs($userid, $currentyear) {
         $mycoursecontents = [];
-        $tablastyear = get_config('block_mycourse', 'year');
-        for ($tab = $currentyear + 1; $tab >= $tablastyear; $tab --) {
+        $tablastyear = (int)get_config('block_mycourse', 'year');
+        if ($tablastyear <= 0 || $tablastyear > ($currentyear + 1)) {
+            $tablastyear = $currentyear - 5;
+        }
+        for ($tab = $currentyear + 1; $tab >= $tablastyear; $tab--) {
 
             // Get all courses for the user for the year.
             $usercourses = $this->block_mycourse_get_usercourses($userid, $tab);
@@ -116,43 +145,80 @@ class block_mycourse extends block_base {
      * @return array The courses for the user.
      */
     public function block_mycourse_get_usercourses($userid, $year) {
+        global $DB;
 
+        $now = time();
         // Get all courses that the user is enrolled in.
         $usercourses = enrol_get_users_courses($userid, true, null, 'startdate DESC');
+        $lastaccessbycourse = $DB->get_records_menu('user_lastaccess', ['userid' => $userid], '', 'courseid, timeaccess');
         $usercourse = [];
 
         foreach ($usercourses as $course) {
 
-            // Get the user roles for the course.
             $context = context_course::instance($course->id);
-            $userroles = get_user_roles($context, $userid);
-            $userrole = reset($userroles);
-            $startyear = date('Y', $course->startdate);
+            $startyear = (int)userdate((int)$course->startdate, '%Y');
+            $canviewhidden = has_capability('moodle/course:viewhiddencourses', $context, $userid);
 
-            if ($startyear == $year) {
-                // Check if the course is visible or if the user is a teacher.
-                if ($course->visible == 1 || ($course->visible == 0 && $userrole->roleid <= 4)) {
+            if ($startyear === (int)$year) {
+                // Check if the course is visible or the user can view hidden courses.
+                if (!empty($course->visible) || $canviewhidden) {
                     // Get the course category.
-                    $category = $this->block_mycourse_get_course_categories($course->id);
+                    $categoryname = $this->block_mycourse_get_course_category_name($course->category);
+                    $category = get_config('block_mycourse', 'coursecategory') ? $categoryname : null;
                     // Get course image.
                     $image = $this->block_mycourse_get_course_image($course->id);
                     // Get Course visibility.
-                    $coursestatus = "";
-                    if ($course->visible == 0 && ($userrole->roleid <= 4)) {
+                    $coursestatus = '';
+                    if (empty($course->visible) && $canviewhidden) {
                         $coursestatus = get_string('coursestatus', 'block_mycourse');
                     }
-                    // Get course completion percentage for students only.
+                    // Get course start status.
+                    $startstatus = null;
+                    if (get_config('block_mycourse', 'coursestartstatus')) {
+                        $formatteddate = userdate((int)$course->startdate, '%e %B');
+                        if ((int)$course->startdate <= $now) {
+                            $startstatus = get_string('coursestartedon', 'block_mycourse', $formatteddate);
+                        } else {
+                            $startstatus = get_string('coursestartson', 'block_mycourse', $formatteddate);
+                        }
+                    }
+                    // Show completion to users who can view the course but cannot edit it.
                     $coursecompletion = null;
-                    if ($userrole->roleid == 5) {
+                    if (has_capability('moodle/course:view', $context, $userid)
+                        && !has_capability('moodle/course:update', $context, $userid)) {
                         $coursecompletion = $this->get_course_completion($course, $userid);
+                    }
+                    $hasprogress = ($coursecompletion !== null);
+                    $progressvalue = null;
+                    if ($hasprogress) {
+                        // Keep displayed progress stable and bounded from 0 to 100.
+                        $progressvalue = (int)round(max(0, min(100, (float)$coursecompletion)));
+                    }
+                    $lastaccess = isset($lastaccessbycourse[$course->id]) ? (int)$lastaccessbycourse[$course->id] : 0;
+                    $lastaccesstext = null;
+                    if ($lastaccess > 0 && $lastaccess <= $now) {
+                        $lastaccesstext = get_string('lastaccessed', 'block_mycourse', format_time($now - $lastaccess));
                     }
 
                     $usercourse[] = [
                         'course' => $course,
+                        'courseurl' => (new moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
                         'category' => $category,
+                        'categorylabel' => $categoryname,
                         'image' => $image,
                         'status' => $coursestatus,
-                        'progress' => $coursecompletion,
+                        'hasstartstatus' => !empty($startstatus),
+                        'startstatus' => $startstatus,
+                        'hasprogress' => $hasprogress,
+                        'progress' => $progressvalue,
+                        'haslastaccess' => !empty($lastaccesstext),
+                        'lastaccesstext' => $lastaccesstext,
+                        'categorysort' => core_text::strtolower(trim((string)$categoryname)),
+                        'startdate' => (int)$course->startdate,
+                        'lastaccess' => $lastaccess,
+                        'hasstarted' => ((int)$course->startdate <= $now) ? 1 : 0,
+                        'coursename' => core_text::strtolower(trim((string)$course->fullname)),
+                        'coursefullname' => trim((string)$course->fullname),
                     ];
                 }
             }
@@ -161,25 +227,24 @@ class block_mycourse extends block_base {
     }
 
     /**
-     * Gets the course categories.
+     * Gets the course category name by category id.
      *
-     * This method is called to get the course categories.
-     *
-     * @param int $courseid The ID of the course.
-     * @return string The course category.
+     * @param int $categoryid The category id.
+     * @return string
      */
-    public function block_mycourse_get_course_categories($courseid) {
+    public function block_mycourse_get_course_category_name($categoryid) {
         global $DB;
-
-        // Check if the Coursecategory setting is enabled.
-        if (!get_config('block_mycourse', 'coursecategory')) {
-            return null;
+        static $categorycache = [];
+        if (isset($categorycache[$categoryid])) {
+            return $categorycache[$categoryid];
         }
-
-        $category = '';
-        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-        $category = $DB->get_field('course_categories', 'name', ['id' => $course->category], MUST_EXIST);
-        return $category;
+        $categorycache[$categoryid] = (string)$DB->get_field(
+            'course_categories',
+            'name',
+            ['id' => $categoryid],
+            IGNORE_MISSING
+        ) ?: '';
+        return $categorycache[$categoryid];
     }
 
     /**
@@ -217,46 +282,58 @@ class block_mycourse extends block_base {
             );
             $courseimage = $url->out();
         } else {
-            // Genereate a random image.
-            $courseimage = $this->generaterandomsvg();
+            // Generate a deterministic and simple fallback image based on course identity.
+            $seed = $course->id . ':' . (string)$course->shortname;
+            $label = trim((string)$course->fullname);
+            $label = $label !== '' ? core_text::strtoupper(core_text::substr($label, 0, 1)) : 'C';
+            $courseimage = $this->generaterandomsvg($seed, $label);
         }
 
         return $courseimage;
     }
 
     /**
-     * Generates a random SVG image.
+     * Generates a simple deterministic SVG fallback image.
      *
-     * This method is called to generate a random SVG image.
+     * This method is called when no course overview image exists.
      *
-     * @return string The random SVG image.
+     * @param string $seed Seed used to keep colors consistent per course.
+     * @param string $label Single-character label to display.
+     * @return string The SVG image data URI.
      */
-    public function generaterandomsvg() {
-        $color = $this->generaterandomcolor();
-        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320">
-            <rect x="0" y="0" width="320" height="320" fill="' . $color . '"/>';
-
-        // Generate a pattern of circles with varying opacity.
-        for ($i = 0; $i < 10; $i++) {
-            for ($j = 0; $j < 10; $j++) {
-                $opacity = (mt_rand(1, 5) / 10);
-                $svg .= '<circle cx="' . ($i * 32) . '" cy="' . ($j * 32) . '" r="16" fill="white" opacity="' . $opacity . '"/>';
-            }
+    public function generaterandomsvg($seed = '', $label = 'C') {
+        $bgcolor = $this->generatefallbackcolor($seed, 34, 90);
+        $textcolor = $this->generatefallbackcolor($seed . ':text', 28, 36);
+        $bordercolor = $this->generatefallbackcolor($seed . ':border', 26, 78);
+        $char = core_text::strtoupper((string)$label);
+        $char = preg_replace('/[^A-Z0-9]/', '', $char);
+        if ($char === '') {
+            $char = 'C';
         }
+        $char = core_text::substr($char, 0, 1);
+        $char = htmlspecialchars($char, ENT_QUOTES);
 
-        $svg .= '</svg>';
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+            <rect x="0" y="0" width="320" height="320" rx="12" ry="12"
+                fill="' . $bgcolor . '" stroke="' . $bordercolor . '" stroke-width="4"/>
+            <text x="50%" y="56%" text-anchor="middle" dominant-baseline="middle"
+                font-family="Arial, sans-serif" font-size="130" font-weight="600" fill="' . $textcolor . '">' . $char . '</text>
+        </svg>';
         return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 
     /**
-     * Generates a random color.
+     * Generates a deterministic fallback color.
      *
-     * This method is called to generate a random color.
-     *
-     * @return string The random color.
+     * @param string $seed Input seed.
+     * @param int $saturation Saturation percentage.
+     * @param int $lightness Lightness percentage.
+     * @return string HSL color string.
      */
-    public function generaterandomcolor() {
-        return 'rgb(' . mt_rand(0, 200) . ',' . mt_rand(0, 200) . ',' . mt_rand(0, 200) . ')';
+    public function generatefallbackcolor($seed = '', $saturation = 30, $lightness = 85) {
+        $hash = md5((string)$seed);
+        $hue = hexdec(substr($hash, 0, 2)) % 360;
+        return 'hsl(' . $hue . ', ' . (int)$saturation . '%, ' . (int)$lightness . '%)';
     }
 
     /**
@@ -278,7 +355,7 @@ class block_mycourse extends block_base {
 
         // Check if completion is enabled for this course.
         if (!$completion->is_enabled()) {
-            return false;
+            return null;
         }
 
         // Get the course progress percentage.

@@ -22,35 +22,48 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
 
- defined('MOODLE_INTERNAL') || die;
-
- // Set default yearto look back 5 years.
- $currentyear = date('Y');
- $defaultyear = $currentyear - 5;
+// Set default year to look back 5 years.
+$currentyear = (int)userdate(time(), '%Y');
+$defaultyear = $currentyear - 5;
 
 if ($ADMIN->fulltree) {
     // Create settings page.
-    $settings->add( new admin_setting_configtext(
+    $settings->add(new admin_setting_configtext(
         'block_mycourse/year',
         get_string('configyear', 'block_mycourse'),
         get_string('year', 'block_mycourse'),
-        "$defaultyear",
+        (string)$defaultyear,
         PARAM_INT,
         4,
-     ));
+    ));
     // Course category display setting checkbox.
-    $settings->add( new admin_setting_configcheckbox(
+    $settings->add(new admin_setting_configcheckbox(
         'block_mycourse/coursecategory',
         get_string('configcoursecategory', 'block_mycourse'),
         get_string('coursecategory', 'block_mycourse'),
         0
     ));
     // Course image display setting checkbox.
-    $settings->add( new admin_setting_configcheckbox(
+    $settings->add(new admin_setting_configcheckbox(
         'block_mycourse/courseimage',
         get_string('configcourseimage', 'block_mycourse'),
         get_string('courseimage', 'block_mycourse'),
         0
+    ));
+    // Course start status display setting checkbox.
+    $settings->add(new admin_setting_configcheckbox(
+        'block_mycourse/coursestartstatus',
+        get_string('configcoursestartstatus', 'block_mycourse'),
+        get_string('coursestartstatus', 'block_mycourse'),
+        1
+    ));
+    // Course search display setting checkbox.
+    $settings->add(new admin_setting_configcheckbox(
+        'block_mycourse/coursesearch',
+        get_string('configcoursesearch', 'block_mycourse'),
+        get_string('coursesearch', 'block_mycourse'),
+        1
     ));
 }

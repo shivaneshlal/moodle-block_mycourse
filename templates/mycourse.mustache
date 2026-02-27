@@ -17,46 +17,96 @@
 {{!
     @template block_mycourse/mycourse
 
-    This template displays a tabbed interface with courses grouped by year in the MyCourse block.
+    Displays the My Course block with:
+    - Year tabs
+    - Sort and status controls
+    - Optional course search with autocomplete
+    - Optional category grouping with collapse/expand controls
 
-    Classes required for JS:
-    * nav-item
-    * nav-link
-    * tab-pane
-    * list-group
-    * list-group-flush
+    Data hooks used by block_mycourse/main:
+    - data-region="block_mycourse"
+    - data-role="block_mycourse_sort"
+    - data-role="block_mycourse_status_filter"
+    - data-role="block_mycourse_expand_all"
+    - data-role="block_mycourse_course_list"
 
-    Data attributes required for JS:
-    * id
-    * data-toggle
-    * href
-    * role
-    * aria-controls
-    * aria-selected
-
-    Context variables required for this template:
-    * mycoursecontents
+    Core context variables:
+    - instanceid
+    - mycoursecontents
+    - sortoptions
+    - showsearch
+    - searchlabel
+    - searchplaceholder
+    - searchurl
+    - uncategorizedlabel
+    - nofilteredcourseslabel
+    - expandalllabel
+    - collapsealllabel
+    - togglecategorytemplatelabel
 
     Example context (json):
     {
+        "instanceid": 99,
+        "showsearch": true,
+        "searchlabel": "Search",
+        "searchplaceholder": "Search courses",
         "mycoursecontents": [
             {
                 "year": "2022",
                 "active": true,
                 "courses": [
-                    {"name": "Course 1", "link": "https://example.com/course1"},
-                    {"name": "Course 2", "link": "https://example.com/course2"}
+                    {
+                        "course": {"fullname": "Course 1"},
+                        "courseurl": "https://example.com/course1",
+                        "startdate": 1704067200,
+                        "lastaccess": 1704758400,
+                        "hasstarted": 1,
+                        "coursename": "course 1",
+                        "coursefullname": "Course 1",
+                        "categorylabel": "Business"
+                    }
                 ]
             }
         ]
     }
 }}
-<div class="tab-container">
+<div class="tab-container block_mycourse" data-region="block_mycourse" data-instanceid="{{instanceid}}" data-uncategorized-label="{{uncategorizedlabel}}" data-nofiltered-label="{{nofilteredcourseslabel}}" data-toggle-category-template-label="{{togglecategorytemplatelabel}}" data-expand-all-label="{{expandalllabel}}" data-collapse-all-label="{{collapsealllabel}}">
+    <div class="block_mycourse__controls mb-2">
+        <span class="block_mycourse__control-icon" title="{{sortlabel}}">
+            <i class="icon fa fa-sort-amount-desc m-0" aria-hidden="true"></i>
+        </span>
+        <select class="custom-select custom-select-sm w-auto" data-role="block_mycourse_sort" aria-label="{{sortlabel}}">
+            {{#sortoptions}}
+                <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+            {{/sortoptions}}
+        </select>
+        <span class="block_mycourse__control-icon ml-2" title="{{#str}} statusfilter, block_mycourse {{/str}}">
+            <i class="icon fa fa-filter m-0" aria-hidden="true"></i>
+        </span>
+        <select class="custom-select custom-select-sm w-auto" data-role="block_mycourse_status_filter" aria-label="{{#str}} statusfilter, block_mycourse {{/str}}">
+            <option value="all">{{#str}} statusfilterall, block_mycourse {{/str}}</option>
+            <option value="started">{{#str}} statusfilterstarted, block_mycourse {{/str}}</option>
+            <option value="upcoming">{{#str}} statusfilterupcoming, block_mycourse {{/str}}</option>
+        </select>
+        {{#showsearch}}
+            <form action="{{searchurl}}" method="get" class="form-inline d-inline-flex align-items-center">
+                <input
+                    type="search"
+                    class="form-control form-control-sm w-auto ml-2"
+                    id="block_mycourse-search-{{instanceid}}"
+                    name="search"
+                    placeholder="{{searchplaceholder}}"
+                    aria-label="{{searchlabel}}">
+            </form>
+        {{/showsearch}}
+        <button type="button" class="btn btn-link p-0 ml-2 d-none block_mycourse__expand-all" data-role="block_mycourse_expand_all">{{expandalllabel}}</button>
+    </div>
+
     {{! Build Year Tabs}}
     <ul class="nav nav-tabs" role="tablist">
         {{#mycoursecontents}}
             <li class="nav-item">
-                <a class="nav-link {{#active}}active{{/active}}" id="tab-{{year}}" data-toggle="tab" href="#content-{{year}}" role="tab" aria-controls="content-{{year}}" aria-selected="{{#active}}true{{/active}}">{{year}}</a>
+                <a class="nav-link {{#active}}active{{/active}}" id="tab-{{instanceid}}-{{year}}" data-toggle="tab" href="#content-{{instanceid}}-{{year}}" role="tab" aria-controls="content-{{instanceid}}-{{year}}" aria-selected="{{#active}}true{{/active}}">{{year}}</a>
             </li>
         {{/mycoursecontents}}
     </ul>
@@ -64,25 +114,33 @@
     {{! Courses by year}}
     <div class="tab-content">
         {{#mycoursecontents}}
-            <div class="tab-pane fade {{#active}}show active{{/active}}" id="content-{{year}}" role="tabpanel" aria-labelledby="tab-{{year}}">
-                <ul class="list-group list-group-flush">
+            <div class="tab-pane fade {{#active}}show active{{/active}}" id="content-{{instanceid}}-{{year}}" role="tabpanel" aria-labelledby="tab-{{instanceid}}-{{year}}">
+                <ul class="list-group list-group-flush" data-role="block_mycourse_course_list">
                     {{#courses}}
-                        <li class="list-group-item">
+                        <li class="list-group-item" data-sort-startdate="{{startdate}}" data-sort-lastaccess="{{lastaccess}}" data-course-started="{{hasstarted}}" data-sort-category="{{categorysort}}" data-sort-name="{{coursename}}" data-course-fullname="{{coursefullname}}" data-sort-category-label="{{categorylabel}}">
                             <div class="d-flex align-items-center">
                                 {{#image}}
-                                    <div class="summary-image rounded mw-100" style='background-image: url("{{image}}");'></div>
+                                    <div class="block_mycourse__summary-image" style='background-image: url("{{image}}");'></div>
                                 {{/image}}
-                                <div class="flex-column-course">
+                                <div class="block_mycourse__course-content">
                                     {{#category}}
-                                        <span class="badge badge-pill">{{category}}</span><br>
+                                        <span class="block_mycourse__category-meta text-muted" title="{{category}}">{{category}}</span>
                                     {{/category}}
-                                        <a href="/course/view.php?id={{course.id}}" class="aalink coursename">{{course.fullname}}</a><br>
-                                    <span class="badge bg-info text-white">{{status}}</span>
-                                    {{#progress}}
+                                        <a href="{{courseurl}}" class="aalink coursename block_mycourse__course-name" title="{{course.fullname}}">{{course.fullname}}</a>
+                                    {{#status}}
+                                        <div class="block_mycourse__detail-text text-muted">{{status}}</div>
+                                    {{/status}}
+                                    {{#hasstartstatus}}
+                                        <div class="block_mycourse__detail-text text-muted">{{startstatus}}</div>
+                                    {{/hasstartstatus}}
+                                    {{#haslastaccess}}
+                                        <div class="block_mycourse__detail-text text-muted">{{lastaccesstext}}</div>
+                                    {{/haslastaccess}}
+                                    {{#hasprogress}}
                                         <div class="progress-text font-weight-light">
                                             <span>{{progress}}% complete</span>
                                         </div>
-                                    {{/progress}}
+                                    {{/hasprogress}}
                                 </div>
                             </div>
                         </li>
@@ -100,5 +158,8 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+{{#js}}
+require(['block_mycourse/main'], function(Main) {
+    Main.init();
+});
+{{/js}}
