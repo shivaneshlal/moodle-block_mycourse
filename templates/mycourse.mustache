@@ -90,13 +90,21 @@
         </select>
         {{#showsearch}}
             <form action="{{searchurl}}" method="get" class="form-inline d-inline-flex align-items-center">
-                <input
-                    type="search"
-                    class="form-control form-control-sm w-auto ml-2"
-                    id="block_mycourse-search-{{instanceid}}"
-                    name="search"
-                    placeholder="{{searchplaceholder}}"
-                    aria-label="{{searchlabel}}">
+                <div class="input-group input-group-sm ml-2">
+                    <input
+                        type="search"
+                        class="form-control"
+                        id="block_mycourse-search-{{instanceid}}"
+                        name="search"
+                        placeholder="{{searchplaceholder}}"
+                        aria-label="{{searchlabel}}"
+                        required>
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-secondary">
+                            {{#str}} searchgo, block_mycourse {{/str}}
+                        </button>
+                    </div>
+                </div>
             </form>
         {{/showsearch}}
         <button type="button" class="btn btn-link p-0 ml-2 d-none block_mycourse__expand-all" data-role="block_mycourse_expand_all">{{expandalllabel}}</button>
