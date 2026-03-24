@@ -89,7 +89,7 @@
             <option value="upcoming">{{#str}} statusfilterupcoming, block_mycourse {{/str}}</option>
         </select>
         {{#showsearch}}
-            <form action="{{searchurl}}" method="get" class="form-inline d-inline-flex align-items-center">
+            <form action="{{#searchurl}}{{searchurl}}{{/searchurl}}{{^searchurl}}/course/search.php{{/searchurl}}" method="get" class="form-inline d-inline-flex align-items-center">
                 <div class="input-group input-group-sm ml-2">
                     <input
                         type="search"

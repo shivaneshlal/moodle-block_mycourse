@@ -25,7 +25,6 @@ namespace block_mycourse\privacy;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements \core_privacy\local\metadata\null_provider {
-
     /**
      * Returns a string that explains that this plugin has no data.
      *

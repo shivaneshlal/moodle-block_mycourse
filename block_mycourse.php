@@ -27,7 +27,6 @@
  * for displaying a user's courses by years.
  */
 class block_mycourse extends block_base {
-
     /**
      * Initializes the block.
      *
@@ -66,7 +65,7 @@ class block_mycourse extends block_base {
         // Get current year (user timezone) to build year tabs.
         $currentyear = (int)userdate(time(), '%Y');
 
-        $this->content = new stdClass;
+        $this->content = new stdClass();
         $this->content->text = '';
         $this->content->footer = '';
 
@@ -102,7 +101,6 @@ class block_mycourse extends block_base {
         // Render the block content.
         $this->content->text = $OUTPUT->render_from_template('block_mycourse/mycourse', $mycoursecontents);
         return $this->content;
-
     }
 
     /**
@@ -121,7 +119,6 @@ class block_mycourse extends block_base {
             $tablastyear = $currentyear - 5;
         }
         for ($tab = $currentyear + 1; $tab >= $tablastyear; $tab--) {
-
             // Get all courses for the user for the year.
             $usercourses = $this->block_mycourse_get_usercourses($userid, $tab);
 
@@ -154,7 +151,6 @@ class block_mycourse extends block_base {
         $usercourse = [];
 
         foreach ($usercourses as $course) {
-
             $context = context_course::instance($course->id);
             $startyear = (int)userdate((int)$course->startdate, '%Y');
             $canviewhidden = has_capability('moodle/course:viewhiddencourses', $context, $userid);
@@ -184,8 +180,10 @@ class block_mycourse extends block_base {
                     }
                     // Show completion to users who can view the course but cannot edit it.
                     $coursecompletion = null;
-                    if (has_capability('moodle/course:view', $context, $userid)
-                        && !has_capability('moodle/course:update', $context, $userid)) {
+                    if (
+                        has_capability('moodle/course:view', $context, $userid)
+                        && !has_capability('moodle/course:update', $context, $userid)
+                    ) {
                         $coursecompletion = $this->get_course_completion($course, $userid);
                     }
                     $hasprogress = ($coursecompletion !== null);
@@ -363,5 +361,4 @@ class block_mycourse extends block_base {
 
         return $progress;
     }
-
 }
